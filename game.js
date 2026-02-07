@@ -149,6 +149,25 @@ const maxComboTime = 150;
 let floatingTexts = [];  // Score pop-up texts
 let foodBounce = 0;      // Food animation counter
 let trailParticles = []; // Snake trail
+let moveTick = 0;        // Tick counter for speed control
+
+// Speed tiers: [scoreThreshold, framesPerMove]
+// At 30 FPS, framesPerMove=6 → ~5 moves/sec, framesPerMove=2 → 15 moves/sec
+const SPEED_TIERS = [
+    { threshold: 0, delay: 6 },   // ~5 moves/sec  (chill start)
+    { threshold: 50, delay: 5 },   // ~6 moves/sec
+    { threshold: 150, delay: 4 },   // ~7.5 moves/sec
+    { threshold: 300, delay: 3 },   // ~10 moves/sec (medium)
+    { threshold: 600, delay: 2 },   // ~15 moves/sec (fast)
+];
+
+function getMoveDelay() {
+    let delay = SPEED_TIERS[0].delay;
+    for (const tier of SPEED_TIERS) {
+        if (score >= tier.threshold) delay = tier.delay;
+    }
+    return delay;
+}
 
 // Initialize high score display
 highScoreDisplay.textContent = highScore;
@@ -168,6 +187,7 @@ function initGame() {
     shakeIntensity = 0;
     isAutoPlaying = false;
     foodBounce = 0;
+    moveTick = 0;
 
     resetSnake();
 
@@ -247,9 +267,19 @@ function togglePause() {
 // ─── Game Loop ──────────────────────────────────────────────────
 function gameLoop() {
     if (isPaused) return;
-    if (isAutoPlaying) autoPlayAI();
-    update();
+
+    // Always render for smooth visuals
+    updateAnimations();
     draw();
+
+    // Only move the snake every N frames (speed ramp)
+    moveTick++;
+    const delay = isBoosting ? Math.max(1, getMoveDelay() - 1) : getMoveDelay();
+    if (moveTick >= delay) {
+        moveTick = 0;
+        if (isAutoPlaying) autoPlayAI();
+        moveStep();
+    }
 }
 
 function autoPlayAI() {
@@ -283,14 +313,8 @@ function autoPlayAI() {
     }
 }
 
-function update() {
-    velocity = nextVelocity;
-
-    const moveCount = isBoosting ? 2 : 1;
-    for (let i = 0; i < moveCount; i++) {
-        moveSnake();
-    }
-
+// Called every frame for smooth animations (particles, text, food bounce)
+function updateAnimations() {
     // Combo Decay
     if (comboTimer > 0) {
         comboTimer--;
@@ -352,6 +376,12 @@ function update() {
             color: tier.body
         });
     }
+}
+
+// Called only on move ticks (speed-controlled)
+function moveStep() {
+    velocity = nextVelocity;
+    moveSnake();
 }
 
 function moveSnake() {

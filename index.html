@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Morty Snake 🐍</title>
   <meta name="description" content="The coolest snake game in the multiverse. Eat emojis, grow long, don't die.">
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐍</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
@@ -45,9 +47,9 @@
       <div class="pause-overlay" id="pauseMenu">
         <h1>PAUSED</h1>
         <div class="controls-hint" style="flex-direction: column; gap: 0.5rem; margin-bottom: 2rem;">
-          <div><span class="key">Arrows</span> Move</div>
+          <div><span class="key">Arrows / WASD</span> Move</div>
           <div><span class="key">Space</span> Boost</div>
-          <div><span class="key">P</span> Resume</div>
+          <div><span class="key">P / Esc</span> Resume</div>
         </div>
         <button class="btn" id="resumeBtn">RESUME</button>
       </div>
@@ -56,18 +58,22 @@
     <!-- Start Screen -->
     <div class="overlay" id="startScreen">
       <h1>MORTY<br>SNAKE</h1>
-      <div class="subtitle">Collect Emojis • Get Long</div>
-      <button class="btn" id="startBtn">PLAY</button>
+      <div class="subtitle">Collect Emojis • Get Long • Don't Die</div>
+      <button class="btn pulse" id="startBtn">PLAY</button>
       <div class="controls-hint">
-        <span>Press <span class="key">Start</span> to Begin</span>
+        <span>Press <span class="key">Enter</span> or click to start</span>
       </div>
     </div>
 
     <!-- Game Over Screen -->
     <div class="overlay hidden" id="gameOverScreen">
-      <h1 style="font-size: 2.5rem; color: #ef4444;">GAME OVER</h1>
-      <div class="subtitle">You scored <span id="finalScore" style="color: white; font-weight: bold;">0</span></div>
-      <button class="btn" id="restartBtn">TRY AGAIN</button>
+      <h1 class="game-over-title">GAME OVER</h1>
+      <div id="newHighBadge" class="new-high-badge" style="display: none;">🏆 NEW HIGH SCORE!</div>
+      <div class="final-score-container">
+        <div class="label">Final Score</div>
+        <div class="final-score" id="finalScore">0</div>
+      </div>
+      <button class="btn pulse" id="restartBtn">TRY AGAIN</button>
     </div>
   </div>
 

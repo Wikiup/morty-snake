@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Cooper Snake 🐍</title>
+  <title>Morty Snake 🐍</title>
   <meta name="description" content="The coolest snake game in the multiverse. Eat emojis, grow long, don't die.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
@@ -42,6 +42,32 @@
       max-width: 500px;
       aspect-ratio: 1;
       margin: 1rem;
+      transition: transform 0.1s;
+    }
+
+    /* Screen Shake Animation */
+    .shake {
+      animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both;
+    }
+
+    #debugLog {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: #0f0;
+      font-family: monospace;
+      font-size: 10px;
+      z-index: 2000;
+      pointer-events: none;
+      background: rgba(0,0,0,0.8);
+      padding: 4px;
+    }
+
+    @keyframes shake {
+      10%, 90% { transform: translate3d(-2px, 0, 0); }
+      20%, 80% { transform: translate3d(4px, 0, 0); }
+      30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+      40%, 60% { transform: translate3d(6px, 0, 0); }
     }
 
     canvas {
@@ -55,6 +81,16 @@
       width: 100%;
       height: 100%;
       image-rendering: pixelated;
+      transition: background-color 0.5s;
+    }
+
+    .disco-bg {
+      animation: disco 2s infinite alternate;
+    }
+
+    @keyframes disco {
+      0% { background-color: #1a0b2e; }
+      100% { background-color: #0b1a2e; }
     }
 
     .ui-layer {
@@ -68,13 +104,63 @@
       flex-direction: column;
       justify-content: space-between;
       padding: 1.5rem;
+      z-index: 5;
     }
+
+    /* Combo Bar */
+    .combo-container {
+      position: absolute;
+      top: 4rem;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 6px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 3px;
+      overflow: hidden;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .combo-container.active { opacity: 1; }
+
+    .combo-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #f59e0b, #ef4444);
+      transition: width 0.1s linear;
+    }
+
+    .combo-text {
+      position: absolute;
+      top: 4.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 1.2rem;
+      font-weight: 900;
+      color: #f59e0b;
+      text-shadow: 0 2px 10px rgba(245, 158, 11, 0.5);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .combo-text.active { opacity: 1; }
 
     .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    .lives-box {
+      text-align: center;
+    }
+
+    .lives {
+      font-size: 1.5rem;
+      color: #ef4444;
+      font-weight: 900;
     }
 
     .score-box {
@@ -104,6 +190,21 @@
       font-weight: 700;
     }
 
+    /* Audio Toggle */
+    .mute-btn {
+      position: absolute;
+      top: 1.5rem;
+      left: 1.5rem;
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 1.5rem;
+      cursor: pointer;
+      opacity: 0.5;
+      z-index: 20;
+    }
+    .mute-btn:hover { opacity: 1; }
+
     /* Menu Overlay */
     .overlay {
       position: absolute;
@@ -114,7 +215,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      z-index: 10;
+      z-index: 1000; /* Boost z-index */
       border-radius: 1rem;
       pointer-events: auto;
       transition: opacity 0.3s ease;
@@ -123,6 +224,7 @@
     .overlay.hidden {
       opacity: 0;
       pointer-events: none;
+      display: none; /* Force hide */
     }
 
     h1 {
@@ -176,6 +278,41 @@
       background: #18181b;
     }
 
+    /* Pause Overlay */
+    .pause-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 20;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .pause-overlay.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .pause-btn {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      z-index: 20;
+      opacity: 0.7;
+    }
+    
+    .pause-btn:hover { opacity: 1; }
+
     /* Particles */
     .particle {
       position: absolute;
@@ -188,39 +325,204 @@
       100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
     }
 
-    /* Mobile Controls (Invisible) */
+    /* Mobile Controls (NES Style) */
     .mobile-controls {
-      display: none; /* We'll use swipe, but maybe buttons for fallback? */
+      display: none;
+      width: 100%;
+      max-width: 500px;
+      height: 220px;
+      position: relative;
+      margin-top: 1rem;
+      background: #d4d4d8;
+      border-radius: 10px 10px 40px 10px;
+      box-shadow: 0 10px 0 #a1a1aa, 0 20px 20px rgba(0,0,0,0.5);
+      padding: 20px;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .controller-left {
+      width: 120px;
+      height: 120px;
+      position: relative;
+    }
+
+    .d-pad {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    .d-btn {
+      position: absolute;
+      background: #18181b;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #000;
+    }
+    
+    .d-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 #000;
+    }
+
+    .d-up { top: 0; left: 40px; width: 40px; height: 40px; border-radius: 4px 4px 0 0; }
+    .d-down { bottom: 0; left: 40px; width: 40px; height: 40px; border-radius: 0 0 4px 4px; }
+    .d-left { top: 40px; left: 0; width: 40px; height: 40px; border-radius: 4px 0 0 4px; }
+    .d-right { top: 40px; right: 0; width: 40px; height: 40px; border-radius: 0 4px 4px 0; }
+    .d-center { top: 40px; left: 40px; width: 40px; height: 40px; background: #18181b; position: absolute; }
+
+    .controller-center {
+      display: flex;
+      gap: 15px;
+      align-self: flex-end;
+      margin-bottom: 20px;
+    }
+
+    .center-btn-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .pill-btn {
+      width: 50px;
+      height: 16px;
+      background: #52525b;
+      border: none;
+      border-radius: 8px;
+      transform: rotate(-20deg);
+      cursor: pointer;
+      box-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+    }
+    
+    .pill-btn:active {
+      background: #3f3f46;
+      transform: rotate(-20deg) translate(1px, 1px);
+      box-shadow: none;
+    }
+
+    .btn-label {
+      font-size: 10px;
+      font-weight: 900;
+      color: #ef4444;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .controller-right {
+      width: 120px;
+      height: 120px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      transform: rotate(-10deg);
+    }
+
+    .action-btn-group {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      position: relative;
+    }
+
+    .round-btn {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 0 rgba(0,0,0,0.3);
+      position: relative;
+    }
+    
+    .round-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 2px 0 rgba(0,0,0,0.3);
+    }
+
+    .btn-a { background: #ef4444; margin-top: 15px; }
+    .btn-b { background: #ef4444; margin-bottom: 15px; }
+
+    .action-label {
+      font-weight: 900;
+      color: #3f3f46;
+      margin-top: 5px;
+      margin-right: 15px;
+    }
+
+    /* Responsive: Show D-Pad on Mobile */
+    @media (pointer: coarse) {
+      .game-container {
+        height: auto;
+        aspect-ratio: auto;
+        max-height: 60vh;
+      }
+      canvas {
+        height: auto;
+        aspect-ratio: 1;
+      }
+      .mobile-controls {
+        display: flex;
+      }
+      .controls-hint {
+        display: none;
+      }
     }
   </style>
 </head>
 <body>
 
-  <div class="game-container">
+  <div class="game-container" id="gameContainer">
+    <div id="debugLog"></div>
     <canvas id="gameCanvas" width="600" height="600"></canvas>
     
     <div class="ui-layer">
+      <button class="mute-btn" id="muteBtn">🔇</button>
+      <button class="pause-btn" id="pauseBtn">⏸️</button>
       <div class="header">
         <div>
           <div class="label">Best</div>
           <div class="high-score" id="highScoreDisplay">0</div>
+        </div>
+        <div class="lives-box">
+          <div class="label">Lives</div>
+          <div class="lives" id="livesDisplay">10</div>
         </div>
         <div class="score-box">
           <div class="label">Score</div>
           <div class="score" id="scoreDisplay">0</div>
         </div>
       </div>
+      
+      <!-- Combo UI -->
+      <div class="combo-container" id="comboBar">
+        <div class="combo-fill" id="comboFill"></div>
+      </div>
+      <div class="combo-text" id="comboText">x2 COMBO!</div>
+      
+      <!-- Pause Menu -->
+      <div class="pause-overlay" id="pauseMenu">
+        <h1>PAUSED</h1>
+        <div class="controls-hint" style="flex-direction: column; gap: 0.5rem; margin-bottom: 2rem;">
+          <div><span class="key">Arrows</span> Move</div>
+          <div><span class="key">Space</span> Boost</div>
+          <div><span class="key">P</span> Resume</div>
+        </div>
+        <button class="btn" id="resumeBtn">RESUME</button>
+      </div>
     </div>
 
     <!-- Start Screen -->
     <div class="overlay" id="startScreen">
-      <h1>COOPER<br>SNAKE</h1>
+      <h1>MORTY<br>SNAKE</h1>
       <div class="subtitle">Collect Emojis • Get Long</div>
       <button class="btn" id="startBtn">PLAY</button>
       <div class="controls-hint">
-        <span><span class="key">WASD</span> or <span class="key">Arrows</span></span>
-        <span>•</span>
-        <span>Swipe to turn</span>
+        <span>Press <span class="key">Start</span> to Begin</span>
       </div>
     </div>
 
@@ -232,15 +534,113 @@
     </div>
   </div>
 
+  <!-- Mobile Controller -->
+  <div class="mobile-controls">
+    <div class="controller-left">
+      <div class="d-pad">
+        <div class="d-center"></div>
+        <button class="d-btn d-up" id="btnUp"></button>
+        <button class="d-btn d-left" id="btnLeft"></button>
+        <button class="d-btn d-right" id="btnRight"></button>
+        <button class="d-btn d-down" id="btnDown"></button>
+      </div>
+    </div>
+    
+    <div class="controller-center">
+      <div class="center-btn-group">
+        <button class="pill-btn" id="btnSelect"></button>
+        <span class="btn-label">SELECT</span>
+      </div>
+      <div class="center-btn-group">
+        <button class="pill-btn" id="btnStart"></button>
+        <span class="btn-label">START</span>
+      </div>
+    </div>
+
+    <div class="controller-right">
+      <div class="action-btn-group">
+        <button class="round-btn btn-b" id="btnB"></button>
+        <span class="action-label">B</span>
+      </div>
+      <div class="action-btn-group">
+        <button class="round-btn btn-a" id="btnA"></button>
+        <span class="action-label">A</span>
+      </div>
+    </div>
+  </div>
+
   <script>
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const scoreDisplay = document.getElementById('scoreDisplay');
     const highScoreDisplay = document.getElementById('highScoreDisplay');
+    const livesDisplay = document.getElementById('livesDisplay');
     const startScreen = document.getElementById('startScreen');
     const gameOverScreen = document.getElementById('gameOverScreen');
     const startBtn = document.getElementById('startBtn');
     const restartBtn = document.getElementById('restartBtn');
+    const muteBtn = document.getElementById('muteBtn');
+
+    // Audio System (Web Audio API)
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    const actx = new AudioContext();
+    let isMuted = true; // Default muted for autoplay policy
+    let bgmOscillators = [];
+
+    function playTone(freq, type, duration, vol = 0.1) {
+      if (isMuted) return;
+      const osc = actx.createOscillator();
+      const gain = actx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, actx.currentTime);
+      gain.gain.setValueAtTime(vol, actx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(actx.destination);
+      osc.start();
+      osc.stop(actx.currentTime + duration);
+    }
+
+    function playEatSound() {
+      playTone(600, 'square', 0.1, 0.1);
+      setTimeout(() => playTone(800, 'square', 0.1, 0.1), 50);
+    }
+
+    function playDieSound() {
+      playTone(150, 'sawtooth', 0.5, 0.2);
+      playTone(100, 'sawtooth', 0.5, 0.2);
+    }
+
+    function playTurnSound() {
+      playTone(200, 'triangle', 0.05, 0.05);
+    }
+
+    // Simple BGM Loop
+    let noteIndex = 0;
+    const melody = [
+      { f: 220, d: 0.2 }, { f: 0, d: 0.2 }, { f: 220, d: 0.2 }, { f: 0, d: 0.2 },
+      { f: 261, d: 0.2 }, { f: 0, d: 0.2 }, { f: 196, d: 0.2 }, { f: 0, d: 0.2 }
+    ];
+    let bgmInterval = null;
+
+    function startBGM() {
+      if (bgmInterval) clearInterval(bgmInterval);
+      bgmInterval = setInterval(() => {
+        if (isMuted || !isGameRunning) return;
+        const note = melody[noteIndex % melody.length];
+        if (note.f > 0) playTone(note.f, 'square', 0.1, 0.03);
+        noteIndex++;
+      }, 200); // 300bpm-ish
+    }
+
+    function toggleMute() {
+      isMuted = !isMuted;
+      muteBtn.textContent = isMuted ? '🔇' : '🔊';
+      muteBtn.style.opacity = isMuted ? 0.5 : 1;
+      if (!isMuted && actx.state === 'suspended') actx.resume();
+    }
+
+    muteBtn.addEventListener('click', toggleMute);
 
     // Config
     const GRID_SIZE = 20; // Size of each cell in px (relative to internal logic)
@@ -254,16 +654,56 @@
     let velocity = { x: 0, y: 0 };
     let food = { x: 15, y: 15, type: '🍎' };
     let score = 0;
+    let lives = 10;
     let highScore = localStorage.getItem('cooperSnakeHigh') || 0;
     let gameLoopId = null;
     let gameSpeed = 100;
     let isGameRunning = false;
+    let isAutoPlaying = false;
     let nextVelocity = { x: 0, y: 0 }; // Buffer for input
+    let isBoosting = false;
 
     // Initialize
     highScoreDisplay.textContent = highScore;
 
     function initGame() {
+      // Game State First
+      score = 0;
+      lives = 10;
+      activePowerups = [];
+      powerupItem = null;
+      comboMultiplier = 1;
+      comboTimer = 0;
+      isPaused = false;
+      
+      resetSnake();
+      
+      scoreDisplay.textContent = score;
+      livesDisplay.textContent = lives;
+      spawnFood();
+      isGameRunning = true;
+      startScreen.classList.add('hidden');
+      gameOverScreen.classList.add('hidden');
+      pauseMenu.classList.remove('visible');
+      
+      // Audio Second (don't block game if this fails)
+      try {
+        if (actx.state === 'suspended') actx.resume();
+        startBGM();
+      } catch (e) {
+        console.log('Audio init failed:', e);
+      }
+      
+      // Force render frame
+      requestAnimationFrame(() => {
+        draw();
+      });
+      
+      if (gameLoopId) clearInterval(gameLoopId);
+      gameLoopId = setInterval(gameLoop, 1000 / 30); 
+    }
+
+    function resetSnake() {
       snake = [
         { x: 10, y: 10 },
         { x: 9, y: 10 },
@@ -271,15 +711,24 @@
       ];
       velocity = { x: 1, y: 0 };
       nextVelocity = { x: 1, y: 0 };
-      score = 0;
-      scoreDisplay.textContent = score;
-      spawnFood();
-      isGameRunning = true;
-      startScreen.classList.add('hidden');
-      gameOverScreen.classList.add('hidden');
+    }
+
+    function loseLife() {
+      playDieSound();
+      lives--;
+      livesDisplay.textContent = lives;
       
-      if (gameLoopId) clearInterval(gameLoopId);
-      gameLoopId = setInterval(gameLoop, gameSpeed);
+      // Screen Flash
+      canvas.style.boxShadow = '0 0 0 4px #ef4444, 0 0 50px #ef4444';
+      setTimeout(() => {
+        canvas.style.boxShadow = '0 0 0 4px #27272a, 0 20px 40px -10px rgba(0,0,0,0.5)';
+      }, 200);
+
+      if (lives <= 0) {
+        gameOver();
+      } else {
+        resetSnake();
+      }
     }
 
     function spawnFood() {
@@ -288,6 +737,18 @@
         y: Math.floor(Math.random() * TILE_COUNT),
         type: FOODS[Math.floor(Math.random() * FOODS.length)]
       };
+      
+      // Random Power-up Spawn (10% chance)
+      if (Math.random() < 0.1 && !powerupItem) {
+        const types = Object.keys(POWERUPS);
+        const type = types[Math.floor(Math.random() * types.length)];
+        powerupItem = {
+          x: Math.floor(Math.random() * TILE_COUNT),
+          y: Math.floor(Math.random() * TILE_COUNT),
+          type: type,
+          config: POWERUPS[type]
+        };
+      }
       
       // Don't spawn on snake
       for (let segment of snake) {
@@ -298,47 +759,228 @@
       }
     }
 
+    function togglePause() {
+      if (!isGameRunning) return;
+      isPaused = !isPaused;
+      
+      if (isPaused) {
+        pauseMenu.classList.add('visible');
+        pauseBtn.textContent = '▶️';
+      } else {
+        pauseMenu.classList.remove('visible');
+        pauseBtn.textContent = '⏸️';
+      }
+    }
+
     function gameLoop() {
+      if (isPaused) return;
+      if (isAutoPlaying) {
+        autoPlayAI();
+      }
       update();
       draw();
     }
 
+    function autoPlayAI() {
+      const head = snake[0];
+      
+      // Simple Greedy Logic
+      const dx = food.x - head.x;
+      const dy = food.y - head.y;
+      
+      let moves = [];
+      
+      if (dx > 0) moves.push({ x: 1, y: 0 }); // Right
+      if (dx < 0) moves.push({ x: -1, y: 0 }); // Left
+      if (dy > 0) moves.push({ x: 0, y: 1 }); // Down
+      if (dy < 0) moves.push({ x: 0, y: -1 }); // Up
+      
+      // If no direct path, pick any valid move
+      if (moves.length === 0) {
+        moves.push({ x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 });
+      }
+      
+      // Filter out suicide moves
+      moves = moves.filter(m => {
+        // Don't reverse
+        if (m.x === -velocity.x && m.y === -velocity.y) return false;
+        
+        const nextX = head.x + m.x;
+        const nextY = head.y + m.y;
+        
+        // Walls
+        if (nextX < 0 || nextX >= TILE_COUNT || nextY < 0 || nextY >= TILE_COUNT) return false;
+        
+        // Self
+        for (let s of snake) {
+          if (s.x === nextX && s.y === nextY) return false;
+        }
+        return true;
+      });
+      
+      if (moves.length > 0) {
+        nextVelocity = moves[0];
+      }
+    }
+
     function update() {
-      // Apply buffered input
+      // Input
       velocity = nextVelocity;
 
-      const head = { x: snake[0].x + velocity.x, y: snake[0].y + velocity.y };
+      // Boost Speed logic (move twice per frame if boosting)
+      const moves = isBoosting ? 2 : 1;
+      
+      for (let i = 0; i < moves; i++) {
+        moveSnake();
+      }
 
-      // Wall Collision (Wrap around or Die? Let's die for classic feel, or wrap for "Cooper" feel?)
-      // Let's do die for now, easier to start.
+      // Combo Decay
+      if (comboTimer > 0) {
+        comboTimer--;
+        comboFill.style.width = `${(comboTimer / maxComboTime) * 100}%`;
+      } else {
+        comboMultiplier = 1;
+        comboBar.classList.remove('active');
+        comboText.classList.remove('active');
+        canvas.classList.remove('disco-bg');
+      }
+
+      // Power-up Timers
+      activePowerups = activePowerups.filter(p => {
+        p.timeLeft -= 33; // ~30ms per frame
+        return p.timeLeft > 0;
+      });
+
+      // Update Particles
+      particles.forEach((p, i) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= 0.05;
+        if (p.life <= 0) particles.splice(i, 1);
+      });
+
+      // Screen Shake Decay
+      if (shakeIntensity > 0) {
+        shakeIntensity--;
+        if (shakeIntensity <= 0) gameContainer.classList.remove('shake');
+      }
+    }
+
+    function moveSnake() {
+      const head = { x: snake[0].x + velocity.x, y: snake[0].y + velocity.y };
+      const hasGhost = activePowerups.some(p => p.type === 'GHOST');
+      const hasMagnet = activePowerups.some(p => p.type === 'MAGNET');
+
+      // Magnet Effect
+      if (hasMagnet) {
+        const dx = food.x - head.x;
+        const dy = food.y - head.y;
+        if (Math.abs(dx) < 5 && Math.abs(dy) < 5) {
+          food.x -= Math.sign(dx) * 0.1; // Float towards snake (visual only really)
+          // Actually let's just instant eat if close enough
+          if (Math.abs(dx) + Math.abs(dy) < 2) {
+            head.x = food.x; head.y = food.y; // Snap to eat
+          }
+        }
+      }
+
+      // Wall Collision
       if (head.x < 0 || head.x >= TILE_COUNT || head.y < 0 || head.y >= TILE_COUNT) {
-        gameOver();
+        loseLife();
         return;
       }
 
-      // Self Collision
-      for (let segment of snake) {
-        if (head.x === segment.x && head.y === segment.y) {
-          gameOver();
-          return;
+      // Self Collision (unless Ghost)
+      if (!hasGhost) {
+        for (let segment of snake) {
+          if (Math.round(head.x) === segment.x && Math.round(head.y) === segment.y) {
+            loseLife();
+            return;
+          }
         }
       }
 
       snake.unshift(head);
 
-      // Eat Food
-      if (head.x === food.x && head.y === food.y) {
-        score += 10;
-        scoreDisplay.textContent = score;
-        spawnFood();
-        // Speed up slightly every 50 points
-        if (score % 50 === 0 && gameSpeed > 50) {
-          clearInterval(gameLoopId);
-          gameSpeed -= 2;
-          gameLoopId = setInterval(gameLoop, gameSpeed);
-        }
+      // Check Eat (Round coords because of float magnet movement potential)
+      if (Math.round(head.x) === food.x && Math.round(head.y) === food.y) {
+        eatFood();
+      } else if (powerupItem && Math.round(head.x) === powerupItem.x && Math.round(head.y) === powerupItem.y) {
+        activatePowerup();
+        snake.pop();
       } else {
         snake.pop();
+      }
+    }
+
+    function eatFood() {
+      playEatSound();
+      spawnParticles(food.x, food.y, '#f59e0b');
+      
+      // Combo Logic
+      comboTimer = maxComboTime;
+      if (comboMultiplier < 5) comboMultiplier++;
+      
+      // Multiplier Check
+      const hasDouble = activePowerups.some(p => p.type === 'DOUBLE');
+      const points = 10 * comboMultiplier * (hasDouble ? 2 : 1);
+      
+      score += points;
+      scoreDisplay.textContent = score;
+      
+      // UI Updates
+      comboBar.classList.add('active');
+      comboText.textContent = `x${comboMultiplier} COMBO!`;
+      comboText.classList.add('active');
+      if (comboMultiplier >= 4) canvas.classList.add('disco-bg');
+      
+      spawnFood();
+    }
+
+    function activatePowerup() {
+      const type = powerupItem.type;
+      const config = powerupItem.config;
+      
+      activePowerups.push({ type: type, timeLeft: config.duration });
+      
+      spawnParticles(powerupItem.x, powerupItem.y, config.color);
+      comboText.textContent = `${config.icon} ACTIVATED!`;
+      comboText.classList.add('active');
+      setTimeout(() => comboText.classList.remove('active'), 1000);
+      
+      powerupItem = null;
+    }
+
+    function spawnParticles(x, y, color) {
+      for (let i = 0; i < 10; i++) {
+        particles.push({
+          x: x * GRID_SIZE + 10,
+          y: y * GRID_SIZE + 10,
+          vx: (Math.random() - 0.5) * 10,
+          vy: (Math.random() - 0.5) * 10,
+          life: 1,
+          color: color
+        });
+      }
+    }
+
+    function loseLife() {
+      playDieSound();
+      lives--;
+      livesDisplay.textContent = lives;
+      gameContainer.classList.add('shake');
+      shakeIntensity = 10;
+      
+      // Screen Flash
+      canvas.style.boxShadow = '0 0 0 4px #ef4444, 0 0 50px #ef4444';
+      setTimeout(() => {
+        canvas.style.boxShadow = '0 0 0 4px #27272a, 0 20px 40px -10px rgba(0,0,0,0.5)';
+      }, 200);
+
+      if (lives <= 0) {
+        gameOver();
+      } else {
+        resetSnake();
       }
     }
 
@@ -346,40 +988,51 @@
       // Clear
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Draw Snake
-      snake.forEach((segment, index) => {
-        // Gradient or Color logic
-        ctx.fillStyle = index === 0 ? '#22c55e' : '#4ade80';
-        
-        // Coordinates to pixels
-        const px = segment.x * GRID_SIZE;
-        const py = segment.y * GRID_SIZE;
-
-        // Draw rounded rect
-        ctx.beginPath();
-        ctx.roundRect(px + 1, py + 1, GRID_SIZE - 2, GRID_SIZE - 2, index === 0 ? 6 : 4);
-        ctx.fill();
-        
-        // Eyes for head
-        if (index === 0) {
-          ctx.fillStyle = 'black';
-          // Direction based eyes
-          let ex1, ey1, ex2, ey2;
-          if (velocity.x === 1) { ex1=12; ey1=6; ex2=12; ey2=14; } // Right
-          if (velocity.x ===-1) { ex1=6; ey1=6; ex2=6; ey2=14; } // Left
-          if (velocity.y ===-1) { ex1=6; ey1=6; ex2=14; ey2=6; } // Up
-          if (velocity.y === 1) { ex1=6; ey1=14; ex2=14; ey2=14; } // Down
-          
-          ctx.beginPath(); ctx.arc(px + ex1, py + ey1, 2, 0, Math.PI*2); ctx.fill();
-          ctx.beginPath(); ctx.arc(px + ex2, py + ey2, 2, 0, Math.PI*2); ctx.fill();
-        }
-      });
+      // Draw Powerup
+      if (powerupItem) {
+        ctx.font = `${GRID_SIZE}px serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(powerupItem.config.icon, powerupItem.x * GRID_SIZE + 10, powerupItem.y * GRID_SIZE + 10);
+      }
 
       // Draw Food
       ctx.font = `${GRID_SIZE}px serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(food.type, food.x * GRID_SIZE + GRID_SIZE/2, food.y * GRID_SIZE + GRID_SIZE/2 + 2);
+      ctx.fillText(food.type, food.x * GRID_SIZE + 10, food.y * GRID_SIZE + 10);
+
+      // Draw Snake
+      snake.forEach((segment, index) => {
+        // Ghost Effect transparency
+        const isGhost = activePowerups.some(p => p.type === 'GHOST');
+        ctx.globalAlpha = isGhost ? 0.5 : 1;
+        
+        ctx.fillStyle = index === 0 ? '#22c55e' : '#4ade80';
+        
+        // Gradient based on score tier?
+        if (score > 500) ctx.fillStyle = index === 0 ? '#ec4899' : '#f472b6'; // Pink tier
+        if (score > 1000) ctx.fillStyle = index === 0 ? '#3b82f6' : '#60a5fa'; // Blue tier
+
+        const px = Math.round(segment.x) * GRID_SIZE;
+        const py = Math.round(segment.y) * GRID_SIZE;
+
+        ctx.beginPath();
+        ctx.roundRect(px + 1, py + 1, GRID_SIZE - 2, GRID_SIZE - 2, index === 0 ? 6 : 4);
+        ctx.fill();
+        
+        ctx.globalAlpha = 1;
+      });
+
+      // Draw Particles
+      particles.forEach(p => {
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.life;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3, 0, Math.PI*2);
+        ctx.fill();
+      });
+      ctx.globalAlpha = 1;
     }
 
     function gameOver() {
@@ -396,32 +1049,148 @@
       gameOverScreen.classList.remove('hidden');
     }
 
+    // Mobile Controls
+    const btnUp = document.getElementById('btnUp');
+    const btnDown = document.getElementById('btnDown');
+    const btnLeft = document.getElementById('btnLeft');
+    const btnRight = document.getElementById('btnRight');
+    const btnA = document.getElementById('btnA');
+    const btnB = document.getElementById('btnB');
+    const btnStart = document.getElementById('btnStart');
+    const btnSelect = document.getElementById('btnSelect');
+
+    function handleDirection(dir) {
+      if (!isGameRunning) return;
+      playTurnSound();
+      if (dir === 'up' && velocity.y !== 1) nextVelocity = { x: 0, y: -1 };
+      if (dir === 'down' && velocity.y !== -1) nextVelocity = { x: 0, y: 1 };
+      if (dir === 'left' && velocity.x !== 1) nextVelocity = { x: -1, y: 0 };
+      if (dir === 'right' && velocity.x !== -1) nextVelocity = { x: 1, y: 0 };
+    }
+
+    // Touch events for D-Pad
+    [btnUp, btnDown, btnLeft, btnRight].forEach(btn => {
+      btn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (btn === btnUp) handleDirection('up');
+        if (btn === btnDown) handleDirection('down');
+        if (btn === btnLeft) handleDirection('left');
+        if (btn === btnRight) handleDirection('right');
+        btn.style.boxShadow = 'none';
+        btn.style.transform = 'translateY(2px)';
+      }, { passive: false });
+
+      btn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        btn.style.boxShadow = '0 4px 0 #000';
+        btn.style.transform = 'translateY(0)';
+      }, { passive: false });
+    });
+
+    // Action Buttons
+    [btnA, btnB].forEach(btn => {
+      btn.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        isBoosting = true;
+        btn.style.boxShadow = 'none';
+        btn.style.transform = 'translateY(2px)';
+      }, { passive: false });
+
+      btn.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        isBoosting = false;
+        btn.style.boxShadow = '0 4px 0 rgba(0,0,0,0.3)';
+        btn.style.transform = 'translateY(0)';
+      }, { passive: false });
+    });
+
+    // Start AutoPlay on load
+    try {
+      startAutoPlay();
+    } catch(e) { console.error('AutoPlay failed', e); }
+
+    // Start/Select
+    function handleStart() {
+      if (isGameRunning && !isAutoPlaying) {
+        togglePause();
+      } else {
+        initGame();
+      }
+    }
+
+    startBtn.addEventListener('click', handleStart);
+    startBtn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      handleStart();
+    });
+
+    restartBtn.addEventListener('click', initGame);
+    restartBtn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      initGame();
+    });
+
+    btnStart.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      handleStart();
+      btnStart.style.boxShadow = 'none';
+      btnStart.style.transform = 'rotate(-20deg) translate(1px, 1px)';
+    });
+
+    btnStart.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      btnStart.style.boxShadow = '1px 1px 0 rgba(0,0,0,0.5)';
+      btnStart.style.transform = 'rotate(-20deg)';
+    });
+
+    // Remove mousedown to prevent double-firing on touch devices
+    // btnStart.addEventListener('mousedown', (e) => { ... });
+
+    btnSelect.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      toggleMute();
+    });
+
     // Input Handling
     document.addEventListener('keydown', (e) => {
-      if (!isGameRunning) return;
+      // Pause
+      if (e.key.toLowerCase() === 'p' || e.key === 'Escape') {
+        togglePause();
+        return;
+      }
+
+      if (!isGameRunning || isPaused) return;
       
+      playTurnSound();
+      
+      if (e.code === 'Space') isBoosting = true;
+
       switch(e.key) {
         case 'ArrowUp':
         case 'w':
         case 'W':
-          if (velocity.y !== 1) nextVelocity = { x: 0, y: -1 };
+          handleDirection('up');
           break;
         case 'ArrowDown':
         case 's':
         case 'S':
-          if (velocity.y !== -1) nextVelocity = { x: 0, y: 1 };
+          handleDirection('down');
           break;
         case 'ArrowLeft':
         case 'a':
         case 'A':
-          if (velocity.x !== 1) nextVelocity = { x: -1, y: 0 };
+          handleDirection('left');
           break;
         case 'ArrowRight':
         case 'd':
         case 'D':
-          if (velocity.x !== -1) nextVelocity = { x: 1, y: 0 };
+          handleDirection('right');
           break;
       }
+    });
+
+    document.addEventListener('keyup', (e) => {
+      if (e.code === 'Space') isBoosting = false;
     });
 
     // Swipe Controls
@@ -461,8 +1230,15 @@
       }
     });
 
+    // Auto-Pause on Blur (Disabled for now to prevent mobile issues)
+    // window.addEventListener('blur', () => {
+    //   if (isGameRunning && !isPaused) togglePause();
+    // });
+
     startBtn.addEventListener('click', initGame);
     restartBtn.addEventListener('click', initGame);
+    pauseBtn.addEventListener('click', togglePause);
+    resumeBtn.addEventListener('click', togglePause);
 
   </script>
 </body>

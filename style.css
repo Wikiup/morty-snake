@@ -26,12 +26,26 @@ body {
   justify-content: center;
 }
 
+/* HUD bar above canvas */
+.hud-bar {
+  width: 100%;
+  max-width: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.25rem;
+  gap: 0.5rem;
+}
+
+.hud-bar .header {
+  flex: 1;
+}
+
 .game-container {
   position: relative;
   width: 100%;
   max-width: 500px;
   aspect-ratio: 1;
-  margin: 1rem;
   transition: transform 0.1s;
 }
 
@@ -264,18 +278,14 @@ canvas {
 
 /* ─── Buttons ────────────────────────────────────────────── */
 .mute-btn {
-  position: absolute;
-  top: 1.5rem;
-  left: 1.5rem;
   background: none;
   border: none;
   color: var(--text);
   font-size: 1.5rem;
   cursor: pointer;
   opacity: 0.5;
-  z-index: 20;
-  pointer-events: auto;
   transition: opacity 0.2s, transform 0.2s;
+  flex-shrink: 0;
 }
 
 .mute-btn:hover {
@@ -284,17 +294,13 @@ canvas {
 }
 
 .pause-btn {
-  position: absolute;
-  top: 1.5rem;
-  right: 1.5rem;
   background: none;
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  z-index: 20;
   opacity: 0.7;
-  pointer-events: auto;
   transition: opacity 0.2s, transform 0.2s;
+  flex-shrink: 0;
 }
 
 .pause-btn:hover {

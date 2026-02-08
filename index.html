@@ -15,28 +15,31 @@
 
 <body>
 
+  <!-- HUD above the canvas -->
+  <div class="hud-bar">
+    <button class="mute-btn" id="muteBtn">🔇</button>
+    <div class="header">
+      <div>
+        <div class="label">Best</div>
+        <div class="high-score" id="highScoreDisplay">0</div>
+      </div>
+      <div class="lives-box">
+        <div class="label">Lives</div>
+        <div class="lives" id="livesDisplay">10</div>
+      </div>
+      <div class="score-box">
+        <div class="label">Score</div>
+        <div class="score" id="scoreDisplay">0</div>
+      </div>
+    </div>
+    <button class="pause-btn" id="pauseBtn">⏸️</button>
+  </div>
+
   <div class="game-container" id="gameContainer">
     <div id="debugLog"></div>
     <canvas id="gameCanvas" width="600" height="600"></canvas>
 
     <div class="ui-layer">
-      <button class="mute-btn" id="muteBtn">🔇</button>
-      <button class="pause-btn" id="pauseBtn">⏸️</button>
-      <div class="header">
-        <div>
-          <div class="label">Best</div>
-          <div class="high-score" id="highScoreDisplay">0</div>
-        </div>
-        <div class="lives-box">
-          <div class="label">Lives</div>
-          <div class="lives" id="livesDisplay">10</div>
-        </div>
-        <div class="score-box">
-          <div class="label">Score</div>
-          <div class="score" id="scoreDisplay">0</div>
-        </div>
-      </div>
-
       <!-- Combo UI -->
       <div class="combo-container" id="comboBar">
         <div class="combo-fill" id="comboFill"></div>
